@@ -1,0 +1,495 @@
+{
+ "note": "Course data verified on 7 Nov 2026 from the National Qualifications Register (nqr.gov.in) and Sector Skill Council files; each course lists its source. Qualifications are revised often, so re-check the source before real-world use. Hours are the notional training hours listed in the source.",
+ "courses": [
+  {
+   "id": "lmv-driver",
+   "name_en": "Light Motor Vehicle Driver",
+   "name_mr": "हलकी मोटार वाहन चालक (LMV ड्रायव्हर)",
+   "code": "QP ASC/Q9702 v2.0",
+   "body": "Automotive Skills Development Council",
+   "level": 2.5,
+   "hours": 240,
+   "mode": "job",
+   "routes": [
+    {
+     "edu": 9,
+     "exp": 0
+    },
+    {
+     "edu": 8,
+     "exp": 1
+    },
+    {
+     "edu": 5,
+     "exp": 4
+    }
+   ],
+   "requirements_en": "Valid LMV licence (permanent or learner), minimum age 18",
+   "requirements_mr": "हलक्या वाहनाचा परवाना (कायमचा किंवा लर्निंग) आणि वय किमान 18 वर्षे",
+   "tags": [
+    "driving",
+    "driver",
+    "car",
+    "vehicle",
+    "taxi",
+    "ड्रायव्हिंग",
+    "गाडी",
+    "चालक",
+    "ड्रायव्हर"
+   ],
+   "family_links": [
+    "driver",
+    "transport",
+    "taxi",
+    "truck"
+   ],
+   "outcome_en": "Work as a driver of light motor vehicles",
+   "outcome_mr": "हलकी वाहनं सुरक्षित चालवणारा ड्रायव्हर म्हणून काम",
+   "source": "https://www.asdc.org.in/images/job_roles/MC_ASCQ9702_Light%20Motor%20Vehicle%20Driver.pdf",
+   "note_mr": "",
+   "note_en": ""
+  },
+  {
+   "id": "suryamitra",
+   "name_en": "Solar PV Installer (Suryamitra)",
+   "name_mr": "सोलर PV इन्स्टॉलर (सूर्यमित्र)",
+   "code": "NQR QG-04-ES-02628-2024-V2-SCGJ",
+   "body": "Skill Council for Green Jobs",
+   "level": 4,
+   "hours": 420,
+   "mode": "job",
+   "routes": [
+    {
+     "edu": 10,
+     "exp": 0,
+     "needs": "iti"
+    },
+    {
+     "edu": 8,
+     "exp": 0,
+     "needs": "iti"
+    },
+    {
+     "edu": 10,
+     "exp": 0,
+     "needs": "diploma"
+    }
+   ],
+   "requirements_en": "ITI (NTC/NAC) training, or 2nd year of a diploma",
+   "requirements_mr": "ITI (NTC/NAC) प्रशिक्षण किंवा डिप्लोमाचं दुसरं वर्ष",
+   "tags": [
+    "solar",
+    "panel",
+    "energy",
+    "सोलर",
+    "सौर"
+   ],
+   "family_links": [
+    "electric",
+    "electrician"
+   ],
+   "outcome_en": "Install, test and commission solar PV systems",
+   "outcome_mr": "सोलर पॅनल बसवणं, तपासणं आणि सुरू करणं",
+   "source": "https://www.nqr.gov.in/qualifications/11198",
+   "note_mr": "",
+   "note_en": ""
+  },
+  {
+   "id": "mobile-tech",
+   "name_en": "Handheld Devices (Mobile & Accessories) Technician",
+   "name_mr": "मोबाईल व हँडहेल्ड उपकरण दुरुस्ती तंत्रज्ञ",
+   "code": "NQR QG-04-TL-04072-2025-V2-TSSC",
+   "body": "Telecom Sector Skill Council",
+   "level": 4,
+   "hours": 480,
+   "mode": "job",
+   "routes": [
+    {
+     "edu": 12,
+     "exp": 0
+    },
+    {
+     "edu": 10,
+     "exp": 0,
+     "needs": "diploma"
+    },
+    {
+     "edu": 10,
+     "exp": 3
+    }
+   ],
+   "requirements_en": "",
+   "requirements_mr": "",
+   "tags": [
+    "mobile",
+    "phone",
+    "repair",
+    "tablet",
+    "laptop",
+    "मोबाईल",
+    "दुरुस्ती",
+    "फोन"
+   ],
+   "family_links": [
+    "shop",
+    "electronics",
+    "repair"
+   ],
+   "outcome_en": "Repair hardware and software of phones, tablets and laptops",
+   "outcome_mr": "मोबाईल, टॅबलेट आणि लॅपटॉपची हार्डवेअर-सॉफ्टवेअर दुरुस्ती",
+   "source": "https://www.nqr.gov.in/qualifications/13647",
+   "note_mr": "",
+   "note_en": ""
+  },
+  {
+   "id": "gda",
+   "name_en": "General Duty Assistant",
+   "name_mr": "जनरल ड्युटी असिस्टंट (हॉस्पिटल सहाय्यक)",
+   "code": "NQR QG-04-HE-00656-2023-V1.1-HSSC",
+   "body": "Healthcare Sector Skill Council",
+   "level": 4,
+   "hours": 900,
+   "mode": "job",
+   "routes": [
+    {
+     "edu": 10,
+     "exp": 0
+    },
+    {
+     "edu": 8,
+     "exp": 2
+    }
+   ],
+   "requirements_en": "",
+   "requirements_mr": "",
+   "tags": [
+    "hospital",
+    "health",
+    "nursing",
+    "patient",
+    "care",
+    "हॉस्पिटल",
+    "दवाखाना",
+    "आरोग्य",
+    "रुग्ण",
+    "medical",
+    "doctor",
+    "मेडिकल",
+    "नर्सिंग"
+   ],
+   "family_links": [
+    "health",
+    "nurse"
+   ],
+   "outcome_en": "Personal care and support for patients in hospitals",
+   "outcome_mr": "हॉस्पिटलमध्ये रुग्णांची वैयक्तिक काळजी आणि मदत",
+   "source": "https://www.nqr.gov.in/qualifications/10156",
+   "note_mr": "",
+   "note_en": ""
+  },
+  {
+   "id": "tailor",
+   "name_en": "Self Employed Tailor",
+   "name_mr": "स्वयंरोजगार शिंपी (सेल्फ एम्प्लॉईड टेलर)",
+   "code": "NQR QG-2.5-AP-01868-2024-V1.1-AMHSSC",
+   "body": "Apparel, Made-Ups & Home Furnishing Sector Skill Council",
+   "level": 2.5,
+   "hours": 300,
+   "mode": "self_employment",
+   "routes": [
+    {
+     "edu": 9,
+     "exp": 0
+    }
+   ],
+   "requirements_en": "",
+   "requirements_mr": "",
+   "tags": [
+    "tailoring",
+    "tailor",
+    "sewing",
+    "stitching",
+    "clothes",
+    "शिवणकाम",
+    "टेलरिंग",
+    "शिलाई",
+    "कपडे",
+    "शिंपी"
+   ],
+   "family_links": [
+    "tailor",
+    "weaving",
+    "textile",
+    "cloth"
+   ],
+   "outcome_en": "Own tailoring work: measuring, cutting, stitching and alterations",
+   "outcome_mr": "मापानुसार कपडे शिवणं आणि अल्टरेशनचं स्वतःचं काम",
+   "source": "https://www.nqr.gov.in/public/qualifications/10200",
+   "note_mr": "",
+   "note_en": ""
+  },
+  {
+   "id": "asst-electrician",
+   "name_en": "Assistant Electrician",
+   "name_mr": "सहाय्यक इलेक्ट्रिशियन",
+   "code": "NQR QG-03-CO-03951-2025-V2-CSDCI",
+   "body": "Construction Skill Development Council of India",
+   "level": 3,
+   "hours": 390,
+   "mode": "job",
+   "routes": [
+    {
+     "edu": 10,
+     "exp": 0
+    },
+    {
+     "edu": 9,
+     "exp": 1
+    },
+    {
+     "edu": 8,
+     "exp": 2
+    },
+    {
+     "edu": 5,
+     "exp": 5
+    }
+   ],
+   "requirements_en": "",
+   "requirements_mr": "",
+   "tags": [
+    "electrician",
+    "electric",
+    "wiring",
+    "light",
+    "इलेक्ट्रिशियन",
+    "वायरिंग",
+    "लाईट",
+    "वीज"
+   ],
+   "family_links": [
+    "electric",
+    "construction"
+   ],
+   "outcome_en": "Assist electricians with wiring in buildings and construction sites",
+   "outcome_mr": "इमारतींमध्ये वायरिंग आणि बांधकाम साइटवर विजेच्या कामात मदत",
+   "source": "https://www.nqr.gov.in/qualifications/13772",
+   "note_mr": "",
+   "note_en": ""
+  },
+  {
+   "id": "dairy",
+   "name_en": "Dairy Farmer - Entrepreneur",
+   "name_mr": "दुग्ध व्यवसायिक (डेअरी फार्मर - उद्योजक)",
+   "code": "NQR QG-04-AG-03544-2025-V2-ASCI",
+   "body": "Agriculture Skill Council of India",
+   "level": 4,
+   "hours": 390,
+   "mode": "self_employment",
+   "routes": [
+    {
+     "edu": 12,
+     "exp": 0
+    },
+    {
+     "edu": 10,
+     "exp": 3
+    }
+   ],
+   "requirements_en": "",
+   "requirements_mr": "",
+   "tags": [
+    "dairy",
+    "milk",
+    "cow",
+    "buffalo",
+    "cattle",
+    "दूध",
+    "डेअरी",
+    "गाय",
+    "म्हैस"
+   ],
+   "family_links": [
+    "farming",
+    "agriculture",
+    "dairy",
+    "cattle",
+    "शेती"
+   ],
+   "outcome_en": "Run a dairy farm: animal care, milking and selling milk",
+   "outcome_mr": "स्वतःचा दुग्ध व्यवसाय: जनावरांची काळजी, दूध काढणं आणि विक्री",
+   "source": "https://www.nqr.gov.in/qualifications/13349",
+   "note_mr": "",
+   "note_en": ""
+  },
+  {
+   "id": "micro-irrigation",
+   "name_en": "Micro-Irrigation Field Assistant",
+   "name_mr": "सूक्ष्म सिंचन क्षेत्र सहाय्यक",
+   "code": "NQR QG-02-AG-01017-2023-V1-ASCI",
+   "body": "Agriculture Skill Council of India",
+   "level": 2,
+   "hours": 210,
+   "mode": "job",
+   "routes": [
+    {
+     "edu": 0,
+     "exp": 0
+    }
+   ],
+   "requirements_en": "",
+   "requirements_mr": "",
+   "tags": [
+    "irrigation",
+    "drip",
+    "sprinkler",
+    "farm",
+    "agriculture",
+    "ठिबक",
+    "सिंचन",
+    "शेती",
+    "तुषार"
+   ],
+   "family_links": [
+    "farming",
+    "agriculture",
+    "शेती"
+   ],
+   "outcome_en": "Install and repair drip and sprinkler systems on farms",
+   "outcome_mr": "शेतात ठिबक व तुषार सिंचन बसवणं आणि दुरुस्ती",
+   "source": "https://nqr.gov.in/qualifications/10754",
+   "note_mr": "हे प्रशिक्षण कृषी विज्ञान केंद्रांमार्फत (KVK) दिलं जातं.",
+   "note_en": "Offered through ICAR Krishi Vigyan Kendras (KVKs)."
+  },
+  {
+   "id": "beauty",
+   "name_en": "Junior Beauty Therapist",
+   "name_mr": "ज्युनियर ब्युटी थेरपिस्ट",
+   "code": "NQR QG-03-BW-06575-2025-V2-BWSSC",
+   "body": "Beauty & Wellness Sector Skill Council",
+   "level": 3,
+   "hours": 450,
+   "mode": "job",
+   "routes": [
+    {
+     "edu": 10,
+     "exp": 0
+    },
+    {
+     "edu": 8,
+     "exp": 3
+    }
+   ],
+   "requirements_en": "",
+   "requirements_mr": "",
+   "tags": [
+    "beauty",
+    "parlour",
+    "parlor",
+    "makeup",
+    "salon",
+    "mehndi",
+    "ब्युटी",
+    "पार्लर",
+    "मेकअप",
+    "मेहंदी"
+   ],
+   "family_links": [
+    "salon",
+    "barber"
+   ],
+   "outcome_en": "Skin care, make-up, manicure and pedicure services in a salon",
+   "outcome_mr": "पार्लरमध्ये स्किन केअर, मेकअप, मॅनिक्युअर-पेडिक्युअर सेवा",
+   "source": "https://www.nqr.gov.in/qualifications/14813",
+   "note_mr": "",
+   "note_en": ""
+  },
+  {
+   "id": "two-wheeler",
+   "name_en": "Two Wheeler Service Technician",
+   "name_mr": "दुचाकी सर्व्हिस तंत्रज्ञ",
+   "code": "NQR 2022/AUT/ASDC/06571",
+   "body": "Automotive Skills Development Council",
+   "level": 4,
+   "hours": 480,
+   "mode": "job",
+   "routes": [
+    {
+     "edu": 11,
+     "exp": 0
+    },
+    {
+     "edu": 10,
+     "exp": 1,
+     "needs": "iti"
+    },
+    {
+     "edu": 10,
+     "exp": 2
+    }
+   ],
+   "requirements_en": "",
+   "requirements_mr": "",
+   "tags": [
+    "bike",
+    "motorcycle",
+    "two wheeler",
+    "scooter",
+    "mechanic",
+    "garage",
+    "बाईक",
+    "दुचाकी",
+    "मेकॅनिक",
+    "गॅरेज"
+   ],
+   "family_links": [
+    "garage",
+    "mechanic"
+   ],
+   "outcome_en": "Routine servicing and repair of two-wheelers",
+   "outcome_mr": "दुचाकीची नियमित सर्व्हिसिंग आणि दुरुस्ती",
+   "source": "https://www.nqr.gov.in/qualifications/9528",
+   "note_mr": "",
+   "note_en": ""
+  },
+  {
+   "id": "data-entry",
+   "name_en": "Domestic Data Entry Operator",
+   "name_mr": "डेटा एंट्री ऑपरेटर",
+   "code": "NQR QG-03-IT-01568-2023-V1.1-NASSCOM",
+   "body": "IT-ITeS Sector Skills Council NASSCOM",
+   "level": 3,
+   "hours": 330,
+   "mode": "job",
+   "routes": [
+    {
+     "edu": 10,
+     "exp": 0
+    },
+    {
+     "edu": 8,
+     "exp": 2
+    }
+   ],
+   "requirements_en": "",
+   "requirements_mr": "",
+   "tags": [
+    "computer",
+    "data entry",
+    "typing",
+    "office",
+    "संगणक",
+    "कॉम्प्युटर",
+    "ऑफिस",
+    "टायपिंग",
+    "data"
+   ],
+   "family_links": [],
+   "outcome_en": "Data entry work on computers",
+   "outcome_mr": "संगणकावर डेटा एंट्रीचं काम",
+   "source": "https://nqr.gov.in/qualifications/2580",
+   "note_mr": "",
+   "note_en": ""
+  }
+ ]
+}

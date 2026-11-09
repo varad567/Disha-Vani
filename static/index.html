@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="mr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Disha Vani</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/static/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body data-state="idle">
+<header class="topbar">
+  <div class="brand">
+    <img class="brand-mark" src="/static/logo.svg" alt="" width="40" height="40">
+    <h1 class="wordmark">दिशा वाणी<span>Disha Vani</span></h1>
+  </div>
+  <p class="powered">Powered by Gnani Prisma and Timbre</p>
+  <div class="top-right">
+    <span class="clock" id="callClock" hidden>00:00</span>
+    <a class="officer-link" href="/officer">Officer view</a>
+  </div>
+</header>
+
+<main class="app">
+  <div class="left">
+  <section class="call-panel panel">
+    <div class="stage" aria-live="polite">
+      <div class="orb-wrap" aria-hidden="true"><div class="halo"></div><div class="ring" id="ring"></div><div class="orb"></div></div>
+      <div class="wave" id="wave" aria-hidden="true"></div>
+      <p class="status" id="status">कौशल्य मार्गदर्शनासाठी कॉल करा</p>
+      <p class="status-en en" id="statusEn">Call for free skill guidance in Marathi</p>
+      <p class="timer" id="timer"></p>
+    </div>
+    <ol class="log" id="log" aria-live="polite"></ol>
+  </section>
+  <div class="controls">
+    <button class="primary talk" id="shareBtn" hidden>निकाल शेअर करा<small>Share your result card on WhatsApp</small></button>
+    <button class="primary" id="startBtn">दिशा वाणीला कॉल करा<small>Call Disha Vani</small></button>
+    <button class="primary talk" id="talkBtn" hidden disabled>बोलण्यासाठी दाबा<small>Tap to answer, tap again to send</small></button>
+    <div class="typebox" id="typebox" hidden>
+      <input id="typeInput" autocomplete="off" placeholder="किंवा इथे लिहा / or type here" aria-label="Type your answer">
+      <button id="typeSend">पाठवा</button>
+    </div>
+    <p class="error" id="error" role="alert"></p>
+    <p class="privacy">Demo only: use a made-up name and don't share personal details.</p>
+  </div>
+  </div>
+
+  <aside class="side">
+    <section class="intro panel" id="intro">
+      <p class="eyebrow">Free skill guidance, in Marathi</p>
+      <h2>बोला, आणि तुमच्यासाठी योग्य कोर्स शोधा</h2>
+      <p class="en">Talk to Disha like a phone call. She asks a few simple questions and suggests courses from the National Qualifications Register that you can actually join.</p>
+      <ol class="how">
+        <li><b>बोला</b><span>Answer in Marathi, Hindi or both</span></li>
+        <li><b>दिशा समजते</b><span>Your profile fills in live</span></li>
+        <li><b>कोर्स मिळवा</b><span>Verified courses with their entry rules</span></li>
+      </ol>
+      <div class="trust">
+        <div><b>11</b><span>courses verified on the National Qualifications Register</span></div>
+        <div><b>3</b><span>languages understood: Marathi, Hindi, English</span></div>
+        <div><b>0</b><span>courses ever removed because of family background</span></div>
+      </div>
+    </section>
+
+    <section class="understood panel" id="understood" hidden>
+      <div class="panel-head">
+        <h2>दिशाला समजलेली माहिती <span class="en">What Disha understood</span></h2>
+        <span class="count" id="progressCount">0 / 7</span>
+      </div>
+      <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+      <ol class="steps" id="profile"></ol>
+    </section>
+
+    <section class="waiting panel" id="waiting" hidden>
+      <div class="skeleton"><span></span><span></span><span></span></div>
+      <div class="skeleton"><span></span><span></span><span></span></div>
+      <p>तुमचे कोर्स इथे दिसतील <span class="en">Your courses appear here once Disha has your answers</span></p>
+    </section>
+
+    <section class="results" id="results" hidden>
+      <h2>तुमच्यासाठी पर्याय <span class="en">Suggested courses</span></h2>
+      <div id="cards"></div>
+      <p class="disclaimer">Courses verified from the National Qualifications Register (nqr.gov.in). Demo uses synthetic callers.</p>
+    </section>
+  </aside>
+
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const MAX_SECONDS = 25;
+let sessionId = null, done = false, fillers = [], fillerIndex = 0;
+let recorder = null, chunks = [], stream = null, meterCtx = null, meterRaf = null, countdown = null;
+
+const LABELS = {
+  name: ["नाव", "Name"], education: ["शिक्षण", "Education"], current_work: ["सध्याचं काम", "Current work"],
+  family_occupation: ["घरचं काम", "Family work"], interests: ["शिकायचं आहे", "Wants to learn"],
+  can_travel: ["प्रवास", "Can travel to"], goal: ["ध्येय", "Goal"],
+};
+const VALUE_MR = {
+  village_only: "गावातच", taluka: "तालुका", district: "जिल्हा", anywhere: "कुठेही",
+  job: "नोकरी", self_employment: "स्वतःचा व्यवसाय", either: "दोन्ही चालेल",
+};
+let lastProfile = {}, lastRec = null, clockTimer = null;
+const WAVE_BARS = 28;
+for (let i = 0; i < WAVE_BARS; i++) {
+  const bar = document.createElement("span");
+  bar.style.setProperty("--i", i);
+  $("wave").append(bar);
+}
+function startClock() {
+  const t0 = Date.now();
+  $("callClock").hidden = false;
+  $("callClock").textContent = "00:00";
+  clearInterval(clockTimer);
+  clockTimer = setInterval(() => {
+    const sec = Math.floor((Date.now() - t0) / 1000);
+    $("callClock").textContent = `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
+  }, 1000);
+}
+function stopClock() { clearInterval(clockTimer); }
+
+function setState(state, mr, en) {
+  document.body.dataset.state = state;
+  if (mr !== undefined) $("status").textContent = mr;
+  if (en !== undefined) $("statusEn").textContent = en;
+}
+function showError(msg) { $("error").textContent = msg || ""; }
+
+function addBubble(who, text) {
+  const li = document.createElement("li");
+  li.className = "bubble " + who;
+  const label = document.createElement("span");
+  label.className = "who";
+  label.textContent = who === "disha" ? "दिशा वाणी" : "तुम्ही";
+  li.append(label, document.createTextNode(text));
+  $("log").append(li);
+  li.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function renderProfile(profile) {
+  $("understood").hidden = false;
+  $("intro").hidden = true;
+  $("waiting").hidden = !$("results").hidden;
+  const list = $("profile");
+  list.innerHTML = "";
+  let filled = 0;
+  for (const [key, [mr, en]] of Object.entries(LABELS)) {
+    let value = profile[key];
+    if (Array.isArray(value)) value = value.join(", ");
+    const li = document.createElement("li");
+    li.className = "step" + (value ? " done" : "");
+    if (value && JSON.stringify(lastProfile[key]) !== JSON.stringify(profile[key])) li.classList.add("fresh");
+    li.innerHTML = '<span class="tick" aria-hidden="true"></span><span class="step-label"></span><span class="step-value"></span>';
+    li.querySelector(".step-label").innerHTML = "";
+    li.querySelector(".step-label").append(document.createTextNode(mr + " "));
+    const small = document.createElement("span");
+    small.className = "en"; small.textContent = en;
+    li.querySelector(".step-label").append(small);
+    li.querySelector(".step-value").textContent = value ? (VALUE_MR[value] || value) : "—";
+    if (value) filled += 1;
+    list.append(li);
+  }
+  const total = Object.keys(LABELS).length;
+  $("progressCount").textContent = `${filled} / ${total}`;
+  $("progressBar").style.width = `${(100 * filled) / total}%`;
+  lastProfile = JSON.parse(JSON.stringify(profile));
+}
+
+function renderCards(rec) {
+  lastRec = rec;
+  $("waiting").hidden = true;
+  const box = $("cards");
+  box.innerHTML = "";
+  const add = (html, extra) => {
+    const card = document.createElement("article");
+    card.className = "course" + (extra ? " extra" : "");
+    card.innerHTML = html;
+    box.append(card);
+    return card;
+  };
+  for (const b of rec.not_eligible || []) {
+    const card = add(`<p class="flag">तुम्ही विचारलेला कोर्स</p><h3></h3><p class="en"></p><div class="pills"><span class="pill no">सध्या पात्र नाही</span></div><p class="need"></p><p class="code"></p>`, true);
+    card.querySelector("h3").textContent = b.name_mr;
+    card.querySelector(".en").textContent = b.name_en;
+    card.querySelector(".need").textContent = "यासाठी लागतं: " + b.needs_mr;
+    card.querySelector(".code").textContent = b.code;
+  }
+  for (const c of rec.recommendations) {
+    const flag = c.family_extra ? "घरच्या कामाशी संबंधित, ऐच्छिक पर्याय"
+               : c.eligibility === "with_experience" ? `यासाठी ${c.exp_years} वर्षांचा कामाचा अनुभव लागतो` : "";
+    const card = add(`
+      ${flag ? '<p class="flag"></p>' : ""}
+      <h3></h3><p class="en"></p>
+      <div class="pills">
+        <span class="pill ${c.eligibility === "direct" ? "ok" : "warn"}">${c.eligibility === "direct" ? "पात्र (Eligible)" : "अनुभव लागतो"}</span>
+        <span class="pill">${c.mode === "self_employment" ? "स्वयंरोजगार" : "नोकरी"}</span>
+        <span class="pill">NSQF ${c.level}</span>
+      </div>
+      <ol class="path"><li class="p1"></li><li class="p2"></li><li class="p3"></li></ol>
+      ${c.requirements_mr ? '<p class="need"></p>' : ""}
+      ${c.note_mr ? '<p class="why note"></p>' : ""}
+      <p class="why reasons"></p>
+      <p class="code"></p>`, c.family_extra);
+    if (flag) card.querySelector(".flag").textContent = flag;
+    card.querySelector("h3").textContent = c.name_mr;
+    card.querySelector(".en").textContent = c.name_en;
+    card.querySelector(".p1").textContent = `सुमारे ${c.hours} तासांचं प्रशिक्षण`;
+    card.querySelector(".p2").textContent = `प्रमाणपत्र: NSQF स्तर ${c.level}`;
+    card.querySelector(".p3").textContent = c.outcome_mr;
+    if (c.requirements_mr) card.querySelector(".need").textContent = "आवश्यक: " + c.requirements_mr;
+    if (c.note_mr) card.querySelector(".note").textContent = c.note_mr;
+    card.querySelector(".reasons").textContent = "Why: " + c.reasons.join(", ");
+    card.querySelector(".code").textContent = c.code;
+  }
+  $("results").hidden = false;
+  $("results").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function play(b64) {
+  return new Promise((resolve) => {
+    if (!b64) return resolve();
+    const audio = new Audio("data:audio/wav;base64," + b64);
+    audio.onended = resolve;
+    audio.onerror = resolve;
+    audio.play().catch(resolve);
+  });
+}
+
+async function speakReply(data) {
+  addBubble("disha", data.reply);
+  if (data.profile) renderProfile(data.profile);
+  setState("speaking", "दिशा बोलत आहे…", "Disha is speaking");
+  $("talkBtn").disabled = true;
+  await play(data.audio);
+  if (data.done) {
+    done = true;
+    stopClock();
+    if (data.recommendation) renderCards(data.recommendation);
+    setState("done", "कॉल पूर्ण झाला", "Call complete. Your options are below.");
+    $("talkBtn").hidden = true;
+    $("typebox").hidden = true;
+    $("shareBtn").hidden = !(data.recommendation && data.recommendation.recommendations.length);
+    $("startBtn").hidden = false;
+    $("startBtn").innerHTML = "नवीन कॉल करा<small>Start a new call</small>";
+    return;
+  }
+  setState("ready", "तुमची पाळी, बोलण्यासाठी दाबा", "Your turn. Tap the button and answer.");
+  $("talkBtn").disabled = false;
+}
+
+async function startCall() {
+  showError("");
+  $("log").innerHTML = ""; $("cards").innerHTML = "";
+  $("results").hidden = true; $("shareBtn").hidden = true; lastProfile = {}; lastRec = null; done = false;
+  $("understood").hidden = true; $("intro").hidden = false; $("waiting").hidden = true;
+  $("startBtn").disabled = true;
+  setState("thinking", "कॉल लागत आहे…", "Connecting");
+  try {
+    const res = await fetch("/api/start", { method: "POST" });
+    if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
+    const data = await res.json();
+    sessionId = data.session_id;
+    fillers = data.fillers || [];
+    startClock();
+    $("startBtn").hidden = true; $("startBtn").disabled = false;
+    $("talkBtn").hidden = false; $("typebox").hidden = false;
+    await speakReply(data);
+  } catch (e) {
+    $("startBtn").disabled = false;
+    setState("idle", "कॉल लागला नाही", "Could not connect");
+    showError("Could not start the call: " + e.message);
+  }
+}
+
+async function sendTurn(form, fromAudio = true) {
+  setState("thinking", "दिशा विचार करत आहे…", "Disha is thinking");
+  $("talkBtn").disabled = true;
+  form.append("session_id", sessionId);
+  // Say a short "हं, बरं" straight away; the real reply waits for it to finish so they never overlap.
+  const filler = fillers.length ? play(fillers[fillerIndex++ % fillers.length]) : Promise.resolve();
+  try {
+    const request = fetch("/api/turn", { method: "POST", body: form });
+    const [res] = await Promise.all([request, filler]);
+    if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
+    const data = await res.json();
+    if (fromAudio && data.heard) addBubble("you", data.heard);
+    await speakReply(data);
+  } catch (e) {
+    setState("ready", "पुन्हा प्रयत्न करा", "Something went wrong. Try again.");
+    $("talkBtn").disabled = false;
+    showError(e.message);
+  }
+}
+
+/* ---- recording: browser audio -> 16 kHz mono WAV, which Gnani Prisma accepts ---- */
+async function toWav16k(blob) {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const decoded = await ctx.decodeAudioData(await blob.arrayBuffer());
+  ctx.close();
+  const rate = 16000;
+  const offline = new OfflineAudioContext(1, Math.ceil(decoded.duration * rate), rate);
+  const src = offline.createBufferSource();
+  src.buffer = decoded; src.connect(offline.destination); src.start();
+  const samples = (await offline.startRendering()).getChannelData(0);
+  const buffer = new ArrayBuffer(44 + samples.length * 2);
+  const v = new DataView(buffer);
+  const text = (o, s) => [...s].forEach((ch, i) => v.setUint8(o + i, ch.charCodeAt(0)));
+  text(0, "RIFF"); v.setUint32(4, 36 + samples.length * 2, true); text(8, "WAVE");
+  text(12, "fmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  text(36, "data"); v.setUint32(40, samples.length * 2, true);
+  for (let i = 0; i < samples.length; i++) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    v.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+  }
+  return new Blob([buffer], { type: "audio/wav" });
+}
+
+function startMeter() {
+  meterCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const analyser = meterCtx.createAnalyser();
+  analyser.fftSize = 512;
+  meterCtx.createMediaStreamSource(stream).connect(analyser);
+  const data = new Uint8Array(analyser.fftSize);
+  const freq = new Uint8Array(analyser.frequencyBinCount);
+  const bars = $("wave").children;
+  const tick = () => {
+    analyser.getByteTimeDomainData(data);
+    let peak = 0;
+    for (const x of data) peak = Math.max(peak, Math.abs(x - 128));
+    $("ring").style.setProperty("--level", Math.min(1, peak / 60).toFixed(2));
+    analyser.getByteFrequencyData(freq);
+    for (let i = 0; i < bars.length; i++) {
+      const v = freq[2 + i * 3] / 255;
+      bars[i].style.setProperty("--h", Math.max(0.12, v).toFixed(2));
+    }
+    meterRaf = requestAnimationFrame(tick);
+  };
+  tick();
+}
+
+async function startRecording() {
+  showError("");
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+  } catch (e) {
+    showError("मायक्रोफोनची परवानगी द्या. Allow microphone access in the browser, or type your answer below.");
+    return;
+  }
+  chunks = [];
+  recorder = new MediaRecorder(stream);
+  recorder.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+  recorder.onstop = onRecordingStop;
+  recorder.start();
+  startMeter();
+  let left = MAX_SECONDS;
+  $("timer").textContent = `0:${String(left).padStart(2, "0")}`;
+  countdown = setInterval(() => {
+    left -= 1;
+    $("timer").textContent = `0:${String(Math.max(left, 0)).padStart(2, "0")}`;
+    if (left <= 0) stopRecording();
+  }, 1000);
+  setState("listening", "ऐकत आहे… बोलून झाल्यावर पुन्हा दाबा", "Listening. Tap again when you finish.");
+  $("talkBtn").classList.add("recording");
+  $("talkBtn").innerHTML = "पाठवा<small>Tap to send</small>";
+}
+
+function stopRecording() {
+  if (!recorder || recorder.state === "inactive") return;
+  clearInterval(countdown); $("timer").textContent = "";
+  recorder.stop();
+  stream.getTracks().forEach((t) => t.stop());
+  cancelAnimationFrame(meterRaf);
+  if (meterCtx) meterCtx.close();
+  $("ring").style.setProperty("--level", 0);
+  for (const bar of $("wave").children) bar.style.removeProperty("--h");
+  $("talkBtn").classList.remove("recording");
+  $("talkBtn").innerHTML = "बोलण्यासाठी दाबा<small>Tap to answer, tap again to send</small>";
+}
+
+async function onRecordingStop() {
+  try {
+    const wav = await toWav16k(new Blob(chunks, { type: recorder.mimeType }));
+    const form = new FormData();
+    form.append("audio", wav, "answer.wav");
+    await sendTurn(form);
+  } catch (e) {
+    setState("ready", "पुन्हा प्रयत्न करा", "Could not read the recording. Try again.");
+    $("talkBtn").disabled = false;
+    showError("Recording problem: " + e.message);
+  }
+}
+
+function sendTyped() {
+  const text = $("typeInput").value.trim();
+  if (!text || done || $("talkBtn").disabled) return;
+  $("typeInput").value = "";
+  addBubble("you", text);
+  const form = new FormData();
+  form.append("text", text);
+  sendTurn(form, false);
+}
+
+
+/* ---- share card: a 1080x1350 image of the top course, for WhatsApp ---- */
+function wrapLines(ctx, text, maxWidth) {
+  const words = String(text).split(" ");
+  const lines = [];
+  let line = "";
+  for (const w of words) {
+    const test = line ? line + " " + w : w;
+    if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = w; }
+    else line = test;
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+function roundRect(ctx, x, y, w, h, r, fill) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath(); ctx.fillStyle = fill; ctx.fill();
+}
+
+function drawLogo(ctx, x, y, size) {
+  // same shapes as /static/logo.svg (a 64 x 64 grid)
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(size / 64, size / 64);
+  roundRect(ctx, 4, 16, 46, 34, 14, "#CDBFEA");
+  ctx.beginPath(); ctx.moveTo(13, 48); ctx.lineTo(9, 60); ctx.lineTo(24, 48); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = "#5B4E99";
+  for (const [bx, by, bh] of [[14, 29, 8], [21, 24, 18], [28, 21, 24], [35, 26, 14]]) roundRect(ctx, bx, by, 4.5, bh, 2.25, "#5B4E99");
+  ctx.lineCap = "round"; ctx.lineJoin = "round";
+  ctx.strokeStyle = "#FFFFFF"; ctx.lineWidth = 9;
+  ctx.beginPath(); ctx.moveTo(44, 20); ctx.lineTo(58, 6); ctx.stroke();
+  ctx.strokeStyle = "#D9693A"; ctx.lineWidth = 5;
+  ctx.beginPath(); ctx.moveTo(44, 20); ctx.lineTo(58, 6); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(48, 5); ctx.lineTo(59, 5); ctx.lineTo(59, 16); ctx.stroke();
+  ctx.restore();
+}
+
+async function makeShareCard() {
+  const top = lastRec.recommendations.find((c) => !c.family_extra) || lastRec.recommendations[0];
+  const name = lastProfile.name || "";
+  const font = (w, px) => `${w} ${px}px Mukta, "Nirmala UI", "Noto Sans Devanagari", sans-serif`;
+  await Promise.all([document.fonts.load(font(700, 64)), document.fonts.load(font(400, 40))]).catch(() => {});
+
+  const W = 1080, H = 1350, pad = 90;
+  const canvas = document.createElement("canvas");
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#EEF6FB"; ctx.fillRect(0, 0, W, H);
+
+  // soft orb, the app's signature, top right
+  const g = ctx.createRadialGradient(865, 190, 20, 900, 215, 230);
+  g.addColorStop(0, "#FFFFFF"); g.addColorStop(0.35, "#E4DCF5"); g.addColorStop(0.75, "#CDBFEA"); g.addColorStop(1, "#B8D8EB");
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(900, 205, 180, 0, Math.PI * 2); ctx.fill();
+
+  drawLogo(ctx, pad - 6, 108, 110);
+  ctx.fillStyle = "#2B2D52"; ctx.font = font(700, 64); ctx.fillText("दिशा वाणी", pad + 118, 170);
+  ctx.fillStyle = "#5E6584"; ctx.font = font(400, 34); ctx.fillText("Disha Vani", pad + 118, 216);
+
+  ctx.fillStyle = "#2B2D52"; ctx.font = font(400, 44);
+  ctx.fillText(name ? `नमस्कार ${name},` : "नमस्कार,", pad, 340);
+  ctx.fillStyle = "#5E6584"; ctx.font = font(400, 38);
+  ctx.fillText("तुमच्यासाठी सुचवलेला कोर्स", pad, 396);
+
+  // peach course card: height grows with the content, footer flows below it
+  const cardY = 436, inner = W - pad * 2 - 88;
+  ctx.font = font(700, 62);
+  const titleLines = wrapLines(ctx, top.name_mr, inner).slice(0, 2);
+  ctx.font = font(700, 32);
+  const reqLines = top.requirements_mr ? wrapLines(ctx, "आवश्यक: " + top.requirements_mr, inner).slice(0, 2) : [];
+  const rows = [`सुमारे ${top.hours} तासांचं प्रशिक्षण`, `प्रमाणपत्र: NSQF स्तर ${top.level}`, top.outcome_mr];
+  const cardH = 140 + titleLines.length * 76 + rows.length * 80 + (reqLines.length ? 24 + reqLines.length * 44 : 0);
+  roundRect(ctx, pad, cardY, W - pad * 2, cardH, 44, "#FFE3D3");
+  let y = cardY + 100;
+  ctx.fillStyle = "#2B2D52"; ctx.font = font(700, 62);
+  for (const l of titleLines) { ctx.fillText(l, pad + 44, y); y += 76; }
+  ctx.fillStyle = "#8A3A14"; ctx.font = font(400, 32); ctx.fillText(top.name_en, pad + 44, y - 18); y += 54;
+  rows.forEach((text, i) => {
+    ctx.fillStyle = "#C0562A"; ctx.beginPath(); ctx.arc(pad + 66, y - 12, 21, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#FFFFFF"; ctx.font = font(700, 26); ctx.textAlign = "center"; ctx.fillText(String(i + 1), pad + 66, y - 3);
+    ctx.textAlign = "left"; ctx.fillStyle = "#2B2D52"; ctx.font = font(400, 36);
+    ctx.fillText(wrapLines(ctx, text, inner - 64)[0], pad + 106, y);
+    y += 80;
+  });
+  if (reqLines.length) {
+    y += 4;
+    ctx.fillStyle = "#8A3A14"; ctx.font = font(700, 32);
+    for (const l of reqLines) { ctx.fillText(l, pad + 44, y); y += 44; }
+  }
+
+  let fy = Math.max(cardY + cardH + 78, H - 200);
+  ctx.fillStyle = "#2B2D52"; ctx.font = font(400, 34);
+  ctx.fillText("पुढची माहिती अधिकारी तुम्हाला देतील.", pad, fy); fy += 54;
+  ctx.fillStyle = "#5B4E99"; ctx.font = font(700, 34);
+  ctx.fillText(`संदर्भ क्रमांक: DV-${(sessionId || "").toUpperCase()}`, pad, fy); fy += 50;
+  ctx.fillStyle = "#5E6584"; ctx.font = font(400, 26);
+  ctx.fillText(`${top.code}, synthetic demo caller`, pad, fy);
+  return new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+}
+
+async function shareCard() {
+  if (!lastRec || !lastRec.recommendations.length) return;
+  const btn = $("shareBtn");
+  btn.disabled = true;
+  try {
+    const blob = await makeShareCard();
+    const file = new File([blob], `disha-vani-${sessionId}.png`, { type: "image/png" });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: "Disha Vani", text: "दिशा वाणी: माझा सुचवलेला कोर्स" });
+    } else {
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = file.name; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    }
+  } catch (e) {
+    if (e.name !== "AbortError") showError("Could not create the card: " + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+$("shareBtn").addEventListener("click", shareCard);
+$("startBtn").addEventListener("click", startCall);
+$("talkBtn").addEventListener("click", () => {
+  if (recorder && recorder.state === "recording") stopRecording();
+  else startRecording();
+});
+$("typeSend").addEventListener("click", sendTyped);
+$("typeInput").addEventListener("keydown", (e) => { if (e.key === "Enter") sendTyped(); });
+</script>
+</body>
+</html>

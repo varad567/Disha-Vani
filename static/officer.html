@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Disha Vani - Officer view</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/static/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <img class="brand-mark" src="/static/logo.svg" alt="" width="40" height="40">
+    <h1 class="wordmark">दिशा वाणी<span>Officer view</span></h1>
+  </div>
+  <p class="powered">Block skill office, synthetic callers</p>
+  <div class="top-right"><a class="officer-link" href="/">Back to call screen</a></div>
+</header>
+
+<main class="officer">
+  <div class="page-title">
+    <h2>Today at this office</h2>
+    <div class="sample-bar">
+      <button class="secondary" id="addSamples">Load sample calls</button>
+      <button class="linkish" id="clearSamples">Remove sample calls</button>
+      <span class="en" id="sampleNote"></span>
+    </div>
+  </div>
+  <section class="stats" id="stats" aria-label="Today at this office"></section>
+  <div class="split">
+    <section class="calls-wrap panel" aria-label="Calls">
+      <h3>Calls</h3>
+      <ul class="calls" id="calls"><li class="empty-state">Loading calls…</li></ul>
+    </section>
+    <section class="detail" id="detail"><div class="panel"><p class="empty-state">Pick a call on the left to see the caller's profile and suggestions.</p></div></section>
+  </div>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const LABELS = { name: "Name", education: "Education", current_work: "Current work", family_occupation: "Family work",
+                 interests: "Wants to learn", can_travel: "Can travel to", goal: "Goal" };
+let current = null;
+const GOAL_LABEL = { job: "Job", self_employment: "Own business", either: "Either" };
+const VALUE_LABEL = { ...GOAL_LABEL, village_only: "Own village only", taluka: "Taluka", district: "District", anywhere: "Anywhere" };
+
+async function loadStats() {
+  const st = await (await fetch("/api/stats")).json();
+  const maxTrade = Math.max(1, ...st.top_trades.map(([, n]) => n));
+  const goalTotal = Math.max(1, Object.values(st.goals).reduce((a, b) => a + b, 0));
+  const passRate = st.guardrail_checked ? Math.round((100 * st.guardrail_passed) / st.guardrail_checked) : null;
+  $("stats").innerHTML = `
+    <div class="stat panel">
+      <div class="stat-top"><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg></span><p class="stat-label">Calls completed / started</p></div>
+      <p class="stat-num">${st.completed}<span> / ${st.started}</span></p>
+      <p class="en">${st.checkins} follow-up calls placed</p>
+    </div>
+    <div class="stat panel">
+      <div class="stat-top"><span class="stat-icon ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M9 12l2 2 4-4"/></svg></span><p class="stat-label">Fairness guardrail passed</p></div>
+      <p class="stat-num">${passRate === null ? "–" : passRate + "%"}</p>
+      <p class="en">Family information added ${st.family_added} optional courses and removed ${st.family_removed}.</p>
+    </div>
+    <div class="stat panel">
+      <div class="stat-top"><span class="stat-icon peach"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><p class="stat-label">Average reply time</p></div>
+      <p class="stat-num">${st.avg.stt === null ? "–" : (st.avg.stt + st.avg.llm + st.avg.tts).toFixed(1) + "s"}</p>
+      <p class="en">${st.avg.stt === null ? "" : `hearing ${st.avg.stt}s, thinking ${st.avg.llm}s, voice ${st.avg.tts}s`}</p>
+    </div>
+    <div class="stat wide panel">
+      <div class="stat-top"><span class="stat-icon peach"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></span><p class="stat-label">Most requested trades</p></div>
+      ${st.top_trades.length ? st.top_trades.map(([name, n]) => `
+        <div class="bar-row"><span>${esc(name)}</span>
+          <span class="bar"><span style="width:${(100 * n) / maxTrade}%"></span></span><b>${n}</b></div>`).join("")
+        : '<p class="empty-state">No completed calls yet.</p>'}
+    </div>
+    <div class="stat panel">
+      <div class="stat-top"><span class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></span><p class="stat-label">What callers want</p></div>
+      ${Object.entries(st.goals).map(([k, n]) => `
+        <div class="bar-row"><span>${GOAL_LABEL[k]}</span>
+          <span class="bar lav"><span style="width:${(100 * n) / goalTotal}%"></span></span><b>${n}</b></div>`).join("")}
+    </div>`;
+  $("sampleNote").textContent = st.synthetic ? `${st.synthetic} synthetic sample callers included` : "";
+}
+
+async function refreshAll() { await Promise.all([loadStats(), loadCalls()]); }
+
+async function loadCalls() {
+  const rows = await (await fetch("/api/sessions")).json();
+  const list = $("calls");
+  list.innerHTML = rows.length ? "" : '<li class="empty-state">No calls yet. Make one from the call screen.</li>';
+  for (const r of rows) {
+    const li = document.createElement("li");
+    const b = document.createElement("button");
+    b.setAttribute("aria-current", r.id === current ? "true" : "false");
+    b.innerHTML = `<strong>${esc(r.name || "Unnamed caller")}${r.synthetic ? ' <span class="chip">sample</span>' : ""}</strong>
+      <span class="en">${esc(r.started?.replace("T", " "))}, ${r.done ? esc(r.top || "no match") : "call not finished"}</span>`;
+    b.onclick = () => openCall(r.id);
+    li.append(b);
+    list.append(li);
+  }
+}
+
+async function openCall(id) {
+  current = id;
+  loadCalls();
+  const r = await (await fetch(`/api/sessions/${id}`)).json();
+  const profile = r.profile || {};
+  const rec = r.recommendation;
+  const g = rec?.guardrail;
+  const timings = r.timings || [];
+  const avg = (k) => timings.length ? (timings.reduce((a, t) => a + (t[k] || 0), 0) / timings.length).toFixed(1) : "–";
+
+  $("detail").innerHTML = `
+    <div class="panel">
+      <h2>Caller profile</h2>
+      <table>${Object.entries(LABELS).map(([k, label]) =>
+        `<tr><th>${label}</th><td>${esc(Array.isArray(profile[k]) ? profile[k].join(", ") : VALUE_LABEL[profile[k]] || profile[k] || "—")}</td></tr>`).join("")}
+      <tr><th>Turns</th><td>${esc(r.turns)}${r.done ? "" : " (not finished)"}</td></tr></table>
+    </div>
+    ${rec ? `
+    <div class="panel">
+      <h2>Suggested courses</h2>
+      <table>${rec.recommendations.map((c) => `<tr><th>${esc(c.name_en)}${c.family_extra ? " (family-related extra)" : ""}</th>
+        <td>${esc(c.hours)} hours, NSQF ${esc(c.level)}, ${c.eligibility === "direct" ? "eligible" : "eligible with " + esc(c.exp_years) + " yrs experience"}, score ${esc(c.score)}
+        ${c.requirements_en ? `<br><b>Requires:</b> ${esc(c.requirements_en)}` : ""}
+        <br><span class="en">${esc(c.reasons.join(", "))}</span>
+        <br><a class="en" href="${esc(c.source)}" target="_blank" rel="noopener">${esc(c.code)}</a></td></tr>`).join("")}
+      ${(rec.not_eligible || []).map((b) => `<tr><th>${esc(b.name_en)} (asked for, not eligible)</th>
+        <td>Needs ${esc(b.needs_en)}<br><a class="en" href="${esc(b.source)}" target="_blank" rel="noopener">${esc(b.code)}</a></td></tr>`).join("")}</table>
+      ${rec.note ? `<p class="en">${esc(rec.note)}</p>` : ""}
+      <p class="en">Source: National Qualifications Register and Sector Skill Council files, checked 7 Nov 2026.</p>
+    </div>
+    <div class="panel guard ${g.passed ? "" : "fail"}">
+      <h2>Fairness guardrail</h2>
+      <p class="${g.passed ? "pass" : "pill no"}">${g.passed ? "Passed" : "Failed, safe list used"}</p>
+      <table>
+        <tr><th>Family work given</th><td>${esc(g.family_occupation || "not shared")}</td></tr>
+        <tr><th>Courses added because of it</th><td>${esc(g.added.join(", ") || "none")}</td></tr>
+        <tr><th>Courses removed because of it</th><td>${g.removed.length}</td></tr>
+        <tr><th>Ranking order unchanged</th><td>${g.order_unchanged ? "Yes" : "No"}</td></tr>
+      </table>
+      <p class="en">Family occupation is applied only after the ranking is fixed, so it can add an option but never narrow one.</p>
+    </div>` : ""}
+    <div class="panel">
+      <h2>30-day follow-up</h2>
+      ${(r.checkins || []).map((c) => `<p>${esc(c.placed.replace("T", " "))}: ${esc(c.status)}<br><span class="en">${esc(c.message)}</span></p>`).join("") || '<p class="empty-state">No follow-up yet.</p>'}
+      <button class="secondary" id="checkinBtn" ${r.done ? "" : "disabled"}>Run simulated 30-day check-in call</button>
+    </div>
+    <div class="panel transcript">
+      <h2>Call transcript</h2>
+      ${(r.history || []).map((h) => `<p><strong>${h.role === "disha" ? "Disha" : "Caller"}:</strong> ${esc(h.text)}</p>`).join("")}
+      <p class="en">Average time per turn: speech-to-text ${avg("stt")}s, thinking ${avg("llm")}s, voice ${avg("tts")}s</p>
+      ${(r.events || []).length ? `<p class="en">System notes: ${esc(r.events.join("; "))}</p>` : ""}
+    </div>`;
+
+  const btn = $("checkinBtn");
+  if (btn) btn.onclick = async () => {
+    btn.disabled = true; btn.textContent = "Calling…";
+    const data = await (await fetch(`/api/sessions/${id}/checkin`, { method: "POST" })).json();
+    if (data.audio) await new Audio("data:audio/wav;base64," + data.audio).play().catch(() => {});
+    openCall(id);
+    loadStats();
+  };
+}
+
+$("addSamples").onclick = async () => {
+  await fetch("/api/sample-calls", { method: "POST" });
+  refreshAll();
+};
+$("clearSamples").onclick = async () => {
+  await fetch("/api/sample-calls", { method: "DELETE" });
+  if (current && current.startsWith("sample")) { current = null; $("detail").innerHTML = '<div class="panel"><p class="empty-state">Pick a call on the left.</p></div>'; }
+  refreshAll();
+};
+refreshAll();
+</script>
+</body>
+</html>
